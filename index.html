@@ -9,111 +9,119 @@
     <style>
         html,body{margin:0;padding:0;height:100%;width:100%;overflow:auto;font-family:'Nunito',sans-serif}
         .game-wrap{width:100%;min-height:100%;background:linear-gradient(135deg,#ffecd2 0%,#fcb69f 50%,#ff9a9e 100%)}
-        h1,h2,h3,.fredoka{font-family:'Fredoka One',cursive}
-        
-        /* Board Styling */
-        .board-cell{position:relative;width:100%;aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:clamp(12px, 2vw, 20px);border:2px solid rgba(255,255,255,.4);box-shadow:inset 0 -2px 4px rgba(0,0,0,.1);background: white;}
-        .cell-snake{background:linear-gradient(135deg,#ff6b6b,#ee5a24)!important;color:#fff}
-        .cell-ladder{background:linear-gradient(135deg,#2ecc71,#27ae60)!important;color:#fff}
-        .cell-start{background:linear-gradient(135deg,#f9ca24,#f0932b)!important;color:#fff}
-        .cell-finish{background:linear-gradient(135deg,#6c5ce7,#a29bfe)!important;color:#fff;animation:pulse-finish 1.5s infinite}
-        
-        @keyframes pulse-finish{0%,100%{box-shadow:0 0 0 0 rgba(108,92,231,.5)}50%{box-shadow:0 0 0 8px rgba(108,92,231,0)}}
-        
-        .pion{width:24px;height:24px;border-radius:50%;position:absolute;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3);transition:all 0.3s ease;z-index:10;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight: bold;color: white;}
-        
-        .dice{width:80px;height:80px;background:#fff;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:36px;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.2);user-select:none}
-        .dice.rolling{animation:roll-dice .6s ease-out}
-        @keyframes roll-dice{0%{transform:rotate(0)} 100%{transform:rotate(360deg)}}
-
-        .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:100;}
+        .fredoka{font-family:'Fredoka One',cursive}
+        .board-cell{position:relative;width:100%;aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;border:2px solid rgba(255,255,255,.4);background:white;}
+        .cell-snake{background:#ff6b6b !important; color: white;}
+        .cell-ladder{background:#2ecc71 !important; color: white;}
+        .pion{width:22px;height:22px;border-radius:50%;position:absolute;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.3);z-index:10;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;color:white;transition: all 0.3s;}
+        .dice{width:80px;height:80px;background:#fff;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:36px;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.2);}
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:100;padding:20px;}
         .modal-overlay.show{display:flex}
-        .modal-box{background:#fff;border-radius:20px;padding:24px;max-width:420px;width:90%;text-align:center;}
-        .btn-answer{padding:10px;border-radius:12px;border:2px solid #ddd;margin:5px 0;width:100%;cursor:pointer;text-align:left;font-weight: bold;}
-        .btn-answer:hover{background:#f0f7ff;border-color:#3498db}
+        .modal-box{background:#fff;border-radius:20px;padding:25px;max-width:450px;width:100%;text-align:center;box-shadow: 0 10px 25px rgba(0,0,0,0.2);}
+        .btn-answer{padding:12px;border-radius:12px;border:2px solid #3498db;margin:5px 0;width:100%;cursor:pointer;font-weight:bold;transition:all 0.2s;text-align:left;}
+        .btn-answer:hover{background:#ebf5fb;}
+        .reading-box{background:#f0f7ff; padding:15px; border-radius:10px; margin-bottom:15px; text-align:left; font-size:14px; border-left:5px solid #3498db;}
+        .input-fill{width:100%; padding:12px; border:2px solid #ddd; border-radius:10px; margin-bottom:10px; text-align:center; font-weight:bold;}
     </style>
 </head>
 <body class="h-full">
-    <div class="game-wrap" id="gameWrap">
-        <div class="text-center pt-4 pb-2 px-4">
-            <h1 class="text-3xl md:text-4xl text-white drop-shadow-lg fredoka">🎮 Ular Tangga Edukatif 🎮</h1>
-            <p class="text-white font-bold text-sm mt-1">Belajar & Bermain!</p>
+    <div class="game-wrap pb-10">
+        <div class="text-center pt-6 pb-4">
+            <h1 class="text-3xl text-white drop-shadow-lg fredoka">🎮 Ular Tangga Edukatif SD 🎮</h1>
         </div>
 
-        <div class="flex flex-col lg:flex-row gap-4 px-4 pb-4 max-w-5xl mx-auto">
-            <!-- Papan Permainan -->
-            <div class="flex-1">
-                <div id="board" class="grid grid-cols-6 gap-1 p-3 bg-white/30 rounded-2xl backdrop-blur-sm shadow-xl">
-                    <!-- Kotak akan diisi oleh JS -->
-                </div>
+        <div class="flex flex-col lg:flex-row gap-6 px-4 max-w-6xl mx-auto items-start">
+            <!-- PAPAN -->
+            <div class="flex-1 w-full flex justify-center">
+                <div id="board" class="grid grid-cols-6 gap-2 p-3 bg-white/30 rounded-2xl backdrop-blur-sm shadow-2xl" style="width: 100%; max-width: 500px;"></div>
             </div>
 
-            <!-- Kontrol -->
-            <div class="lg:w-72 flex flex-col gap-3">
-                <div class="bg-white/80 rounded-2xl p-4 text-center shadow-lg">
-                    <p id="turnLabel" class="fredoka text-lg mb-2">Giliran: Pemain 1</p>
+            <!-- KONTROL -->
+            <div class="lg:w-80 w-full flex flex-col gap-4">
+                <div class="bg-white/90 rounded-2xl p-6 text-center shadow-xl">
+                    <p id="turnLabel" class="fredoka text-xl mb-4 text-red-500">Giliran: Pemain 1</p>
                     <div class="dice mx-auto" id="diceBtn" onclick="rollDice()">🎲</div>
-                    <p id="diceResult" class="mt-2 font-bold text-gray-500 text-sm">Klik dadu!</p>
+                    <p id="diceValue" class="mt-4 font-bold text-gray-600">Klik Dadu!</p>
                 </div>
-                <div class="bg-white/80 rounded-2xl p-3 shadow-lg">
-                    <h3 class="fredoka text-center mb-2">⭐ Skor</h3>
-                    <div id="scoreBoard" class="flex flex-col gap-2"></div>
+                <div class="bg-white/90 rounded-2xl p-4 shadow-xl">
+                    <h3 class="fredoka text-center mb-2 border-b">⭐ Skor Pemain</h3>
+                    <div id="scoreBoard" class="flex flex-col gap-2 pt-2"></div>
                 </div>
-                <button onclick="toggleSound()" id="soundBtn" class="bg-white rounded-xl p-2 font-bold shadow">🔊 Musik: ON</button>
+                <button onclick="toggleSound()" id="soundBtn" class="bg-white rounded-xl p-3 font-bold shadow-lg">🔊 Musik: ON</button>
             </div>
         </div>
     </div>
 
-    <!-- Modals -->
+    <!-- MODAL SOAL -->
     <div class="modal-overlay" id="questionModal">
-        <div class="modal-box" id="questionBox">
-            <!-- Pertanyaan di sini -->
+        <div class="modal-box" id="modalBox">
+            <h2 id="qType" class="fredoka text-xl mb-4 text-blue-600">Pertanyaan</h2>
+            <div id="readingArea"></div>
+            <p id="qText" class="text-lg font-bold mb-6 text-gray-700"></p>
+            <div id="qOptions" class="flex flex-col gap-2"></div>
         </div>
     </div>
 
     <script>
-        // --- AUDIO CONFIG ---
+        // --- AUDIO ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         let soundOn = true;
-        function playTone(f, d, t='sine') {
+        function playTone(f, d, type='sine') {
             if(!soundOn) return;
             if(audioCtx.state === 'suspended') audioCtx.resume();
             const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-            o.type = t; o.frequency.value = f; g.gain.value = 0.1;
+            o.type = type; o.frequency.value = f; g.gain.value = 0.1;
             o.connect(g); g.connect(audioCtx.destination);
             o.start(); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + d);
             o.stop(audioCtx.currentTime + d);
         }
 
-        // --- GAME DATA ---
-        const TOTAL = 30, PLAYERS = 5;
-        const COLORS = ['#e74c3c','#3498db','#f39c12','#2ecc71','#9b59b6'];
-        const SNAKES = {27:8, 21:4, 17:3};
-        const LADDERS = {2:12, 6:16, 11:22};
-        let positions = Array(PLAYERS).fill(1);
-        let scores = Array(PLAYERS).fill(0);
-        let currentPlayer = 0;
-        let isRolling = false;
+        // --- DATA GAME ---
+        const TOTAL_KOTAK = 30;
+        const SNAKES = {27: 8, 21: 4, 17: 3};
+        const LADDERS = {2: 12, 6: 16, 11: 22};
+        const COLORS = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71', '#9b59b6'];
+        let positions = [1, 1, 1, 1, 1];
+        let scores = [0, 0, 0, 0, 0];
+        let turn = 0;
+        let isMoving = false;
 
-        const SOAL = [
-            {q: "Berat semangka itu...", o: ["delapan kilogram", "8 kilogram"], a: 1},
-            {q: "Harga buku tulis itu...", o: ["Rp5.000,00", "lima ribu rupiah"], a: 0},
-            {q: "5 + 7 = ...", o: ["11", "12"], a: 1}
+        // --- BANK SOAL ---
+        const BANK_SOAL = [
+            // Pilihan Ganda
+            {type:'mc', q: "Berat semangka itu …", o: ["delapan kilogram", "8 kilogram"], a: 1},
+            {type:'mc', q: "Harga buku tulis itu …", o: ["Rp5.000,00", "lima ribu rupiah"], a: 0},
+            {type:'mc', q: "Alamat rumah Siti di …", o: ["Jalan Mawar nomor sembilan", "Jalan Mawar No. 9"], a: 1},
+            {type:'mc', q: "Panjang meja itu …", o: ["dua meter", "2 meter"], a: 1},
+            {type:'mc', q: "Dana pembangunan taman sebesar …", o: ["300 juta rupiah", "tiga ratus juta rupiah"], a: 0},
+            // Benar/Salah
+            {type:'tf', q: "Rp15.000,00 - Apakah penulisan ini Benar atau Salah?", o: ["Benar (B)", "Salah (S)"], a: 0},
+            {type:'tf', q: "Jalan Anggrek No. 10 - Apakah penulisan ini Benar atau Salah?", o: ["Benar (B)", "Salah (S)"], a: 0},
+            {type:'tf', q: "'lima meter' - Apakah penulisan angka ini Benar?", o: ["Benar (B)", "Salah (S)"], a: 1},
+            {type:'tf', q: "12 kilogram - Apakah penulisan ini Benar?", o: ["Benar (B)", "Salah (S)"], a: 0},
+            {type:'tf', q: "'dua belas ribu rupiah' - Apakah penulisan angka ini Benar?", o: ["Benar (B)", "Salah (S) Jurusnya"], a: 1},
+            // Isian
+            {type:'fill', q: "Ibu membeli gula ___ kilogram", a: "2"},
+            {type:'fill', q: "Harga gula tersebut ___ rupiah", a: "Rp10.000,00"},
+            {type:'fill', q: "Rumah ibu di Jalan Kenanga No. ___", a: "7"},
+            // Bacaan
+            {type:'read', text: "“Siti akan pergi ke Bandung untuk mengunjungi neneknya. Ia berangkat naik kereta pukul 08.00 pagi dari Stasiun Jakarta. Kereta tiba di Bandung pukul 11.00 siang.”", q: "Apa tujuan perjalanan Siti?", o: ["Liburan ke pantai", "Mengunjungi neneknya"], a: 1},
+            {type:'read', text: "“Siti akan pergi ke Bandung...”, Kereta tiba pukul 11.00 siang.", q: "Siti berangkat pukul …", o: ["08.00", "11.00"], a: 0},
+            {type:'read', text: "“...Ia berangkat naik kereta pukul 08.00 pagi...”,", q: "Siti naik apa?", o: ["Bus", "Kereta"], a: 1},
+            {type:'read', text: "“...Berangkat 08.00, tiba 11.00...”,", q: "Berapa lama perjalanan Siti?", o: ["3 jam", "2 jam"], a: 0},
+            {type:'read', text: "“...berangkat dari Stasiun Jakarta.”", q: "Siti berangkat dari mana?", o: ["Bandung", "Jakarta"], a: 1}
         ];
 
-        // --- CORE FUNCTIONS ---
+        // --- CORE LOGIC ---
         function buildBoard() {
             const board = document.getElementById('board');
             board.innerHTML = '';
-            // Zigzag grid logic
             for (let r = 4; r >= 0; r--) {
                 for (let c = 0; c < 6; c++) {
                     let num = (r % 2 === 0) ? (r * 6 + (5 - c) + 1) : (r * 6 + c + 1);
                     const div = document.createElement('div');
                     div.className = 'board-cell';
                     div.id = 'cell-' + num;
-                    if(num === 1) div.classList.add('cell-start');
-                    if(num === 30) div.classList.add('cell-finish');
                     if(SNAKES[num]) div.classList.add('cell-snake');
                     if(LADDERS[num]) div.classList.add('cell-ladder');
                     div.innerHTML = `<span>${num}</span>`;
@@ -121,112 +129,130 @@
                 }
             }
             renderPions();
-            updateScoreBoard();
+            updateScore();
         }
 
         function renderPions() {
             document.querySelectorAll('.pion').forEach(p => p.remove());
             positions.forEach((pos, i) => {
                 const cell = document.getElementById('cell-' + pos);
-                if (cell) {
-                    const p = document.createElement('div');
-                    p.className = 'pion';
-                    p.style.backgroundColor = COLORS[i];
-                    p.innerText = i + 1;
-                    cell.appendChild(p);
-                }
+                const p = document.createElement('div');
+                p.className = 'pion';
+                p.style.backgroundColor = COLORS[i];
+                p.style.boxShadow = `0 0 10px ${COLORS[i]}`;
+                p.innerText = i + 1;
+                // Offset pion agar tidak bertumpuk sempurna
+                p.style.transform = `translate(${(i-2)*5}px, ${(i-2)*5}px)`;
+                cell.appendChild(p);
             });
         }
 
         async function rollDice() {
-            if(isRolling) return;
-            isRolling = true;
-            const dice = document.getElementById('diceBtn');
-            dice.classList.add('rolling');
-            playTone(300, 0.2, 'square');
-            
+            if(isMoving) return;
+            isMoving = true;
             const roll = Math.floor(Math.random() * 6) + 1;
-            setTimeout(async () => {
-                dice.classList.remove('rolling');
-                dice.innerText = roll;
-                
-                let target = positions[currentPlayer] + roll;
-                if(target > TOTAL) target = TOTAL;
+            document.getElementById('diceBtn').innerText = roll;
+            playTone(300, 0.2, 'square');
 
-                // Move Step by Step
-                for(let s = positions[currentPlayer]+1; s <= target; s++) {
-                    positions[currentPlayer] = s;
-                    renderPions();
-                    playTone(600, 0.05);
-                    await new Promise(r => setTimeout(r, 200));
-                }
-                
+            let oldPos = positions[turn];
+            let newPos = oldPos + roll;
+            if(newPos > TOTAL_KOTAK) newPos = TOTAL_KOTAK;
+
+            for(let s = oldPos + 1; s <= newPos; s++) {
+                positions[turn] = s;
+                renderPions();
+                playTone(600, 0.05);
+                await new Promise(r => setTimeout(r, 200));
+            }
+
+            if(newPos === TOTAL_KOTAK) {
+                alert("PEMAIN " + (turn + 1) + " MENANG! 🎉");
+                location.reload();
+            } else {
                 showQuestion();
-            }, 600);
+            }
         }
 
         function showQuestion() {
+            const q = BANK_SOAL[Math.floor(Math.random() * BANK_SOAL.length)];
             const modal = document.getElementById('questionModal');
-            const box = document.getElementById('questionBox');
-            const q = SOAL[Math.floor(Math.random() * SOAL.length)];
+            const qArea = document.getElementById('qOptions');
+            const readingArea = document.getElementById('readingArea');
             
-            box.innerHTML = `<h3 class="font-bold text-lg mb-4">${q.q}</h3>`;
-            q.o.forEach((opt, idx) => {
-                const btn = document.createElement('button');
-                btn.className = 'btn-answer';
-                btn.innerText = opt;
-                btn.onclick = () => handleAnswer(idx === q.a);
-                box.appendChild(btn);
-            });
+            document.getElementById('qText').innerText = q.q;
+            document.getElementById('qType').innerText = "Tantangan Pemain " + (turn + 1);
+            qArea.innerHTML = '';
+            readingArea.innerHTML = '';
+
+            if(q.type === 'read') {
+                readingArea.innerHTML = `<div class="reading-box">${q.text}</div>`;
+            }
+
+            if(q.type === 'mc' || q.type === 'tf' || q.type === 'read') {
+                q.o.forEach((opt, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn-answer';
+                    btn.innerText = opt;
+                    btn.onclick = () => checkAnswer(idx === q.a);
+                    qArea.appendChild(btn);
+                });
+            } else if(q.type === 'fill') {
+                qArea.innerHTML = `
+                    <input type="text" id="fillAns" class="input-fill" placeholder="Ketik jawaban...">
+                    <button class="btn-answer text-center" style="text-align:center; background:#3498db; color:white;" onclick="checkFill('${q.a}')">Kirim Jawaban</button>
+                `;
+            }
             modal.classList.add('show');
         }
 
-        function handleAnswer(isCorrect) {
+        function checkFill(correct) {
+            const val = document.getElementById('fillAns').value.trim();
+            checkAnswer(val.toLowerCase() === correct.toLowerCase());
+        }
+
+        function checkAnswer(isCorrect) {
             document.getElementById('questionModal').classList.remove('show');
+            const pos = positions[turn];
+
             if(isCorrect) {
-                scores[currentPlayer] += 10;
-                playTone(800, 0.3);
-                // Check Ladder
-                if(LADDERS[positions[currentPlayer]]) {
-                    positions[currentPlayer] = LADDERS[positions[currentPlayer]];
+                scores[turn] += 10;
+                playTone(880, 0.3);
+                if(LADDERS[pos]) {
+                    alert("Benar! Kamu naik tangga! 🪜");
+                    positions[turn] = LADDERS[pos];
                     playTone(900, 0.5);
                 }
             } else {
-                playTone(200, 0.4, 'sawtooth');
-                // Check Snake
-                if(SNAKES[positions[currentPlayer]]) {
-                    positions[currentPlayer] = SNAKES[positions[currentPlayer]];
+                playTone(150, 0.4, 'sawtooth');
+                if(SNAKES[pos]) {
+                    alert("Salah! Kamu turun ular! 🐍");
+                    positions[turn] = SNAKES[pos];
                 }
             }
-            
+
             renderPions();
-            updateScoreBoard();
-            
-            if(positions[currentPlayer] === 30) {
-                alert("Pemain " + (currentPlayer + 1) + " Menang!");
-                location.reload();
-            } else {
-                currentPlayer = (currentPlayer + 1) % PLAYERS;
-                document.getElementById('turnLabel').innerText = "Giliran: Pemain " + (currentPlayer + 1);
-                isRolling = false;
-            }
+            updateScore();
+            turn = (turn + 1) % 5;
+            document.getElementById('turnLabel').innerText = "Giliran: Pemain " + (turn + 1);
+            document.getElementById('turnLabel').style.color = COLORS[turn];
+            isMoving = false;
         }
 
-        function updateScoreBoard() {
+        function updateScore() {
             const sb = document.getElementById('scoreBoard');
             sb.innerHTML = scores.map((s, i) => `
                 <div class="flex justify-between font-bold" style="color:${COLORS[i]}">
-                    <span>Pemain ${i+1}</span> <span>${s}⭐</span>
+                    <span>Pemain ${i+1}</span>
+                    <span>${s} Poin</span>
                 </div>
             `).join('');
         }
 
         function toggleSound() {
             soundOn = !soundOn;
-            document.getElementById('soundBtn').innerText = soundOn ? '🔊 Musik: ON' : '🔇 Musik: OFF';
+            document.getElementById('soundBtn').innerText = soundOn ? "🔊 Musik: ON" : "🔇 Musik: OFF";
         }
 
-        // Jalankan saat load
         window.onload = buildBoard;
     </script>
 </body>
