@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ular Tangga Edukatif SD</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        html,body{margin:0;padding:0;height:100%;width:100%;overflow:auto;font-family:'Nunito',sans-serif}
+        .game-wrap{width:100%;min-height:100%;background:linear-gradient(135deg,#ffecd2 0%,#fcb69f 50%,#ff9a9e 100%)}
+        h1,h2,h3,.fredoka{font-family:'Fredoka One',cursive}
+        
+        /* Board Styling */
+        .board-cell{position:relative;width:100%;aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:clamp(12px, 2vw, 20px);border:2px solid rgba(255,255,255,.4);box-shadow:inset 0 -2px 4px rgba(0,0,0,.1);background: white;}
+        .cell-snake{background:linear-gradient(135deg,#ff6b6b,#ee5a24)!important;color:#fff}
+        .cell-ladder{background:linear-gradient(135deg,#2ecc71,#27ae60)!important;color:#fff}
+        .cell-start{background:linear-gradient(135deg,#f9ca24,#f0932b)!important;color:#fff}
+        .cell-finish{background:linear-gradient(135deg,#6c5ce7,#a29bfe)!important;color:#fff;animation:pulse-finish 1.5s infinite}
+        
+        @keyframes pulse-finish{0%,100%{box-shadow:0 0 0 0 rgba(108,92,231,.5)}50%{box-shadow:0 0 0 8px rgba(108,92,231,0)}}
+        
+        .pion{width:24px;height:24px;border-radius:50%;position:absolute;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3);transition:all 0.3s ease;z-index:10;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight: bold;color: white;}
+        
+        .dice{width:80px;height:80px;background:#fff;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:36px;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.2);user-select:none}
+        .dice.rolling{animation:roll-dice .6s ease-out}
+        @keyframes roll-dice{0%{transform:rotate(0)} 100%{transform:rotate(360deg)}}
+
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:100;}
+        .modal-overlay.show{display:flex}
+        .modal-box{background:#fff;border-radius:20px;padding:24px;max-width:420px;width:90%;text-align:center;}
+        .btn-answer{padding:10px;border-radius:12px;border:2px solid #ddd;margin:5px 0;width:100%;cursor:pointer;text-align:left;font-weight: bold;}
+        .btn-answer:hover{background:#f0f7ff;border-color:#3498db}
+    </style>
+</head>
+<body class="h-full">
+    <div class="game-wrap" id="gameWrap">
+        <div class="text-center pt-4 pb-2 px-4">
+            <h1 class="text-3xl md:text-4xl text-white drop-shadow-lg fredoka">🎮 Ular Tangga Edukatif 🎮</h1>
+            <p class="text-white font-bold text-sm mt-1">Belajar & Bermain!</p>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-4 px-4 pb-4 max-w-5xl mx-auto">
+            <!-- Papan Permainan -->
+            <div class="flex-1">
+                <div id="board" class="grid grid-cols-6 gap-1 p-3 bg-white/30 rounded-2xl backdrop-blur-sm shadow-xl">
+                    <!-- Kotak akan diisi oleh JS -->
+                </div>
+            </div>
+
+            <!-- Kontrol -->
+            <div class="lg:w-72 flex flex-col gap-3">
+                <div class="bg-white/80 rounded-2xl p-4 text-center shadow-lg">
+                    <p id="turnLabel" class="fredoka text-lg mb-2">Giliran: Pemain 1</p>
+                    <div class="dice mx-auto" id="diceBtn" onclick="rollDice()">🎲</div>
+                    <p id="diceResult" class="mt-2 font-bold text-gray-500 text-sm">Klik dadu!</p>
+                </div>
+                <div class="bg-white/80 rounded-2xl p-3 shadow-lg">
+                    <h3 class="fredoka text-center mb-2">⭐ Skor</h3>
+                    <div id="scoreBoard" class="flex flex-col gap-2"></div>
+                </div>
+                <button onclick="toggleSound()" id="soundBtn" class="bg-white rounded-xl p-2 font-bold shadow">🔊 Musik: ON</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal-overlay" id="questionModal">
+        <div class="modal-box" id="questionBox">
+            <!-- Pertanyaan di sini -->
+        </div>
+    </div>
+
+    <script>
+        // --- AUDIO CONFIG ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let soundOn = true;
+        function playTone(f, d, t='sine') {
+            if(!soundOn) return;
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+            o.type = t; o.frequency.value = f; g.gain.value = 0.1;
+            o.connect(g); g.connect(audioCtx.destination);
+            o.start(); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + d);
+            o.stop(audioCtx.currentTime + d);
+        }
+
+        // --- GAME DATA ---
+        const TOTAL = 30, PLAYERS = 5;
+        const COLORS = ['#e74c3c','#3498db','#f39c12','#2ecc71','#9b59b6'];
+        const SNAKES = {27:8, 21:4, 17:3};
+        const LADDERS = {2:12, 6:16, 11:22};
+        let positions = Array(PLAYERS).fill(1);
+        let scores = Array(PLAYERS).fill(0);
+        let currentPlayer = 0;
+        let isRolling = false;
+
+        const SOAL = [
+            {q: "Berat semangka itu...", o: ["delapan kilogram", "8 kilogram"], a: 1},
+            {q: "Harga buku tulis itu...", o: ["Rp5.000,00", "lima ribu rupiah"], a: 0},
+            {q: "5 + 7 = ...", o: ["11", "12"], a: 1}
+        ];
+
+        // --- CORE FUNCTIONS ---
+        function buildBoard() {
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+            // Zigzag grid logic
+            for (let r = 4; r >= 0; r--) {
+                for (let c = 0; c < 6; c++) {
+                    let num = (r % 2 === 0) ? (r * 6 + (5 - c) + 1) : (r * 6 + c + 1);
+                    const div = document.createElement('div');
+                    div.className = 'board-cell';
+                    div.id = 'cell-' + num;
+                    if(num === 1) div.classList.add('cell-start');
+                    if(num === 30) div.classList.add('cell-finish');
+                    if(SNAKES[num]) div.classList.add('cell-snake');
+                    if(LADDERS[num]) div.classList.add('cell-ladder');
+                    div.innerHTML = `<span>${num}</span>`;
+                    board.appendChild(div);
+                }
+            }
+            renderPions();
+            updateScoreBoard();
+        }
+
+        function renderPions() {
+            document.querySelectorAll('.pion').forEach(p => p.remove());
+            positions.forEach((pos, i) => {
+                const cell = document.getElementById('cell-' + pos);
+                if (cell) {
+                    const p = document.createElement('div');
+                    p.className = 'pion';
+                    p.style.backgroundColor = COLORS[i];
+                    p.innerText = i + 1;
+                    cell.appendChild(p);
+                }
+            });
+        }
+
+        async function rollDice() {
+            if(isRolling) return;
+            isRolling = true;
+            const dice = document.getElementById('diceBtn');
+            dice.classList.add('rolling');
+            playTone(300, 0.2, 'square');
+            
+            const roll = Math.floor(Math.random() * 6) + 1;
+            setTimeout(async () => {
+                dice.classList.remove('rolling');
+                dice.innerText = roll;
+                
+                let target = positions[currentPlayer] + roll;
+                if(target > TOTAL) target = TOTAL;
+
+                // Move Step by Step
+                for(let s = positions[currentPlayer]+1; s <= target; s++) {
+                    positions[currentPlayer] = s;
+                    renderPions();
+                    playTone(600, 0.05);
+                    await new Promise(r => setTimeout(r, 200));
+                }
+                
+                showQuestion();
+            }, 600);
+        }
+
+        function showQuestion() {
+            const modal = document.getElementById('questionModal');
+            const box = document.getElementById('questionBox');
+            const q = SOAL[Math.floor(Math.random() * SOAL.length)];
+            
+            box.innerHTML = `<h3 class="font-bold text-lg mb-4">${q.q}</h3>`;
+            q.o.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-answer';
+                btn.innerText = opt;
+                btn.onclick = () => handleAnswer(idx === q.a);
+                box.appendChild(btn);
+            });
+            modal.classList.add('show');
+        }
+
+        function handleAnswer(isCorrect) {
+            document.getElementById('questionModal').classList.remove('show');
+            if(isCorrect) {
+                scores[currentPlayer] += 10;
+                playTone(800, 0.3);
+                // Check Ladder
+                if(LADDERS[positions[currentPlayer]]) {
+                    positions[currentPlayer] = LADDERS[positions[currentPlayer]];
+                    playTone(900, 0.5);
+                }
+            } else {
+                playTone(200, 0.4, 'sawtooth');
+                // Check Snake
+                if(SNAKES[positions[currentPlayer]]) {
+                    positions[currentPlayer] = SNAKES[positions[currentPlayer]];
+                }
+            }
+            
+            renderPions();
+            updateScoreBoard();
+            
+            if(positions[currentPlayer] === 30) {
+                alert("Pemain " + (currentPlayer + 1) + " Menang!");
+                location.reload();
+            } else {
+                currentPlayer = (currentPlayer + 1) % PLAYERS;
+                document.getElementById('turnLabel').innerText = "Giliran: Pemain " + (currentPlayer + 1);
+                isRolling = false;
+            }
+        }
+
+        function updateScoreBoard() {
+            const sb = document.getElementById('scoreBoard');
+            sb.innerHTML = scores.map((s, i) => `
+                <div class="flex justify-between font-bold" style="color:${COLORS[i]}">
+                    <span>Pemain ${i+1}</span> <span>${s}⭐</span>
+                </div>
+            `).join('');
+        }
+
+        function toggleSound() {
+            soundOn = !soundOn;
+            document.getElementById('soundBtn').innerText = soundOn ? '🔊 Musik: ON' : '🔇 Musik: OFF';
+        }
+
+        // Jalankan saat load
+        window.onload = buildBoard;
+    </script>
+</body>
+</html>
